@@ -2,51 +2,62 @@ version: '3'
 volumes:
     mysql_data:
 services:
-    empty-project-nginx-service:
+    docker-rabbitmq-nginx-service:
         build:
             context: .
             dockerfile: ./nginx/Dockerfile
-        container_name: empty-project-nginx-container
+        container_name: docker-rabbitmq-nginx-container
         volumes:
-            - ./../:/var/www/empty-project/
-        ports: ['8006:80']
+            - ./../:/var/www/docker-rabbitmq/
+        ports: ['8901:80']
         networks:
-            - empty-project-network
-    empty-project-php-service:
+            - docker-rabbitmq-network
+    docker-rabbitmq-php-service:
         build:
             context: .
             dockerfile: ./php/Dockerfile
-        container_name: empty-project-php-container
-        ports: ['9007:9000']
+        container_name: docker-rabbitmq-php-container
+        ports: ['9101:9000']
         volumes:
-            - ./../:/var/www/empty-project/
-            - ./../vendor:/var/www/empty-project/vendor
+            - ./../:/var/www/docker-rabbitmq/
+            - ./../vendor:/var/www/docker-rabbitmq/vendor
         networks:
-            - empty-project-network
-    empty-project-mysql-service:
+            - docker-rabbitmq-network
+    docker-rabbitmq-mysql-service:
         image: mysql
-        container_name: empty-project-mysql-container
+        container_name: docker-rabbitmq-mysql-container
         command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci', '--authentication_policy=mysql_native_password']
         environment:
             MYSQL_ROOT_PASSWORD: root
-        ports: ['3312:3306']
+        ports: ['3906:3306']
         volumes:
             - ./mysql:/var/lib/mysql
         networks:
-            - empty-project-network
-    empty-project-phpmyadmin-service:
+            - docker-rabbitmq-network
+    docker-rabbitmq-phpmyadmin-service:
         image: phpmyadmin/phpmyadmin:latest
-        container_name: empty-project-phpmyadmin-container
+        container_name: docker-rabbitmq-phpmyadmin-container
         environment:
-            PMA_HOST: empty-project-mysql-service
+            PMA_HOST: docker-rabbitmq-mysql-service
             PMA_USER: root
             PMA_PASSWORD: root
-        ports: ['8087:80']
+        ports: ['8902:80']
         depends_on:
-            - empty-project-mysql-service
+            - docker-rabbitmq-mysql-service
         volumes:
-            - ./phpmyadmin/:/var/www/empty-project/docker/phpmyadmin/
+            - ./phpmyadmin/:/var/www/docker-rabbitmq/docker/phpmyadmin/
         networks:
-            - empty-project-network
+            - docker-rabbitmq-network
+    docker-rabbitmq-rabbit-service:
+        image: rabbitmq:3-management-alpine
+        container_name: docker-rabbitmq-rabbit-container
+        ports: ['5672:5672', '15672:15672']
+        volumes:
+            - ./docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+            - ./docker-conf/rabbitmq/log/:/var/log/rabbitmq
+        networks:
+            - docker-rabbitmq-network
+
 networks:
-    empty-project-network:
+    docker-rabbitmq-network:
+        driver: bridge

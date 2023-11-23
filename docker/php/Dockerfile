@@ -11,4 +11,4 @@ RUN apt-get update && apt-get install apt-file -y && apt-file update && apt-get 
         pdo pdo_mysql
 
 RUN curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
-WORKDIR /var/www/empty-project/
+WORKDIR /var/www/docker-rabbitmq/
